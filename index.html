@@ -25,7 +25,7 @@ body{
   box-shadow:0 8px 30px rgba(200,75,128,0.2);
   margin:16px;
   z-index:10;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.6s ease;
 }
 .title{
   font-size:26px;
@@ -72,6 +72,8 @@ body{
   line-height:2.2;
   text-align:center;
   max-width:88%;
+  opacity:0;
+  transition: opacity 1.2s ease;
 }
 
 /*炸开粒子*/
@@ -114,10 +116,11 @@ const sentenceList = [
   "希望我能越来越好，你也是"
 ];
 
-//爱心随机颜色池，扩展多种色彩，不限于粉色
+//莫兰迪低饱和色系
 const heartColors = [
-  '#ff5983','#ff88bb','#ff3e77','#ffb3cc','#e8548c','#ff6699','#d84478',
-  '#7b61ff','#42a5ff','#ff9547','#27c2a0','#c242ff','#ff4f6c','#ffc136'
+  "#BFA8A8", "#B8A3B7", "#A8B4BF", "#B9C1B4", "#D1B8AF",
+  "#C4A9B3", "#9EACB8", "#C8BCB0", "#B4A8B8", "#ADB8B2",
+  "#D4B9BC", "#A9B3BC"
 ];
 
 const containerDom = document.getElementById("container");
@@ -147,41 +150,37 @@ setInterval(updateTimer, 1000);
 //弹窗元素
 const popupBox = document.getElementById('popup-box');
 const popupTextDom = document.getElementById('popup-text');
-let typeTimer = null;
 
-//逐字打字显示
-async function showTypeText(text,color){
+//文字淡入
+async function showFadeText(text,color){
   popupTextDom.style.color = color;
-  popupTextDom.innerText = '';
+  popupTextDom.innerText = text;
+  popupTextDom.style.opacity = 0;
   popupBox.style.display = 'flex';
-  //显示文字时隐藏计时器
+  //隐藏计时器
   containerDom.style.opacity = "0";
-
-  let index = 0;
-  clearInterval(typeTimer);
-  return new Promise(resolve=>{
-    typeTimer = setInterval(()=>{
-      if(index < text.length){
-        popupTextDom.innerText += text.charAt(index);
-        index++;
-      }else{
-        clearInterval(typeTimer);
-        resolve();
-      }
-    },120);
+  //慢淡入
+  await new Promise(resolve=>{
+    setTimeout(()=>{
+      popupTextDom.style.opacity = "1";
+      setTimeout(resolve,1200);
+    },50);
   })
 }
 
-//关闭弹窗
-function closePopup(){
-  clearInterval(typeTimer);
+//文字淡出关闭
+async function closePopup(){
+  popupTextDom.style.opacity = "0";
+  await new Promise(resolve=>setTimeout(resolve,1200));
   popupBox.style.display = 'none';
   popupTextDom.innerText = '';
-  //文字消失，恢复计时器显示
+  //恢复计时器
   containerDom.style.opacity = "1";
 }
-//点击任意位置关闭弹窗
-popupBox.addEventListener('click',closePopup);
+//点击屏幕关闭弹窗
+popupBox.addEventListener('click',async ()=>{
+  await closePopup();
+});
 
 
 //爱心炸开粒子特效
@@ -207,7 +206,7 @@ function createHeart(){
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.innerHTML = "❤";
-  //随机颜色
+  //莫兰迪低饱和随机颜色
   const ranColor = heartColors[Math.floor(Math.random()*heartColors.length)];
   heart.style.color = ranColor;
   //随机大小
@@ -219,15 +218,16 @@ function createHeart(){
   heart.style.animationDuration = fallDur+"s";
   document.body.appendChild(heart);
 
-  //点击爱心事件：炸开特效，随机拿句子，逐字展示，3秒后自动关闭
+  //点击爱心事件：炸开特效，淡入文字，停留，淡出消失
   heart.onclick = async function(e){
     e.stopPropagation();
     const rect = heart.getBoundingClientRect();
     createBurst(rect.left+rect.width/2, rect.top+rect.height/2, ranColor);
     const randomSentence = sentenceList[Math.floor(Math.random()*sentenceList.length)];
-    await showTypeText(randomSentence, ranColor);
-    setTimeout(()=>{
-      closePopup();
+    await showFadeText(randomSentence, ranColor);
+    //完整显示后停留3秒，然后淡出消失
+    setTimeout(async ()=>{
+      await closePopup();
     },3000);
   }
 
