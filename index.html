@@ -25,6 +25,7 @@ body{
   box-shadow:0 8px 30px rgba(200,75,128,0.2);
   margin:16px;
   z-index:10;
+  transition: opacity 0.35s ease;
 }
 .title{
   font-size:26px;
@@ -66,11 +67,24 @@ body{
   padding:30px;
 }
 #popup-text{
-  font-family:"SimSun", "宋体",serif;
-  font-size:20px;
-  line-height:2;
+  font-family:"STXingkai","华文行楷", "KaiTi", "行书",serif;
+  font-size:26px;
+  line-height:2.2;
   text-align:center;
-  max-width:85%;
+  max-width:88%;
+}
+
+/*炸开粒子*/
+.particle{
+  position:fixed;
+  pointer-events:none;
+  font-size:22px;
+  z-index:99;
+  animation:burst 0.7s ease-out forwards;
+}
+@keyframes burst{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}
 }
 </style>
 </head>
@@ -100,9 +114,13 @@ const sentenceList = [
   "希望我能越来越好，你也是"
 ];
 
-//爱心随机颜色池
-const heartColors = ['#ff5983','#ff88bb','#ff3e77','#ffb3cc','#e8548c','#ff6699','#d84478'];
+//爱心随机颜色池，扩展多种色彩，不限于粉色
+const heartColors = [
+  '#ff5983','#ff88bb','#ff3e77','#ffb3cc','#e8548c','#ff6699','#d84478',
+  '#7b61ff','#42a5ff','#ff9547','#27c2a0','#c242ff','#ff4f6c','#ffc136'
+];
 
+const containerDom = document.getElementById("container");
 //计时器更新
 function updateTimer(){
   const now = Date.now();
@@ -136,6 +154,9 @@ async function showTypeText(text,color){
   popupTextDom.style.color = color;
   popupTextDom.innerText = '';
   popupBox.style.display = 'flex';
+  //显示文字时隐藏计时器
+  containerDom.style.opacity = "0";
+
   let index = 0;
   clearInterval(typeTimer);
   return new Promise(resolve=>{
@@ -156,10 +177,30 @@ function closePopup(){
   clearInterval(typeTimer);
   popupBox.style.display = 'none';
   popupTextDom.innerText = '';
+  //文字消失，恢复计时器显示
+  containerDom.style.opacity = "1";
 }
 //点击任意位置关闭弹窗
 popupBox.addEventListener('click',closePopup);
 
+
+//爱心炸开粒子特效
+function createBurst(x,y,color){
+  for(let i=0;i<10;i++){
+    const p = document.createElement("div");
+    p.className = "particle";
+    p.innerHTML = "❤";
+    p.style.color = color;
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    const tx = (Math.random()-0.5)*160;
+    const ty = (Math.random()-0.5)*160;
+    p.style.setProperty('--tx',tx+"px");
+    p.style.setProperty('--ty',ty+"px");
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),700);
+  }
+}
 
 //生成飘落爱心
 function createHeart(){
@@ -178,9 +219,11 @@ function createHeart(){
   heart.style.animationDuration = fallDur+"s";
   document.body.appendChild(heart);
 
-  //点击爱心事件：随机拿句子，逐字展示，3秒后自动关闭
+  //点击爱心事件：炸开特效，随机拿句子，逐字展示，3秒后自动关闭
   heart.onclick = async function(e){
     e.stopPropagation();
+    const rect = heart.getBoundingClientRect();
+    createBurst(rect.left+rect.width/2, rect.top+rect.height/2, ranColor);
     const randomSentence = sentenceList[Math.floor(Math.random()*sentenceList.length)];
     await showTypeText(randomSentence, ranColor);
     setTimeout(()=>{
