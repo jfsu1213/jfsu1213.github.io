@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>我们的计时</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  min-height:100vh;
+  background:#ffd6e4;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:#c84b80;
+}
+#container{
+  background:rgba(255,255,255,0.65);
+  padding:40px 28px;
+  border-radius:24px;
+  text-align:center;
+  box-shadow:0 8px 30px rgba(200,75,128,0.2);
+  margin:16px;
+}
+.title{
+  font-size:22px;
+  margin-bottom:24px;
+  font-weight:500;
+}
+.time-text{
+  font-size:28px;
+  font-weight:bold;
+  line-height:1.8;
+}
+.desc{
+  margin-top:20px;
+  font-size:15px;
+  opacity:0.85;
+}
+/* 爱心飘落 */
+.heart{
+  position:fixed;
+  top:-40px;
+  z-index:-1;
+  color:#ff79a8;
+  font-size:24px;
+  pointer-events:none;
+  animation:fall linear forwards;
+}
+@keyframes fall{
+  0%{transform:translateY(0) rotate(0deg);opacity:1;}
+  100%{transform:translateY(100vh) rotate(360deg);opacity:0;}
+}
+</style>
+</head>
+<body>
+<div id="container">
+  <div class="title">💗 我们在一起的时光 💗</div>
+  <div class="time-text" id="timer"></div>
+  <div class="desc">始于 2026‑03‑29 10:30</div>
+</div>
+
+<script>
+// 起始时间
+const startTime = new Date("2026-03-29T10:30:00+08:00").getTime();
+
+function updateTimer(){
+  const now = Date.now();
+  let diff = now - startTime;
+  if(diff < 0){
+    document.getElementById("timer").innerText = "还未开始";
+    return;
+  }
+  const day = Math.floor(diff / (1000 * 60 * 60 * 24));
+  diff = diff % (1000 * 60 * 60 * 24);
+  const hour = Math.floor(diff / (1000 * 60 * 60));
+  diff = diff % (1000 * 60 * 60);
+  const min = Math.floor(diff / (1000 * 60));
+  diff = diff % (1000 * 60);
+  const sec = Math.floor(diff / 1000);
+
+  document.getElementById("timer").innerText =
+    `${day} 天 ${hour} 小时 ${min} 分 ${sec} 秒`;
+}
+
+// 每秒刷新
+updateTimer();
+setInterval(updateTimer, 1000);
+
+// 爱心飘落
+function createHeart(){
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.innerHTML = "❤";
+  heart.style.left = Math.random()*100 + "vw";
+  heart.style.animationDuration = (4 + Math.random()*4)+"s";
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(),8000);
+}
+setInterval(createHeart,400);
+</script>
+</body>
+</html>
