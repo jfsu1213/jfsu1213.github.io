@@ -68,8 +68,8 @@ body{
 }
 #popup-text{
   font-family:"STXingkai","华文行楷", "KaiTi", "行书",serif;
-  font-size:26px;
-  line-height:2.2;
+  font-size:32px;
+  line-height:2.4;
   text-align:center;
   max-width:88%;
   opacity:0;
@@ -116,11 +116,11 @@ const sentenceList = [
   "希望我能越来越好，你也是"
 ];
 
-//莫兰迪低饱和色系
+//马卡龙柔和色系
 const heartColors = [
-  "#BFA8A8", "#B8A3B7", "#A8B4BF", "#B9C1B4", "#D1B8AF",
-  "#C4A9B3", "#9EACB8", "#C8BCB0", "#B4A8B8", "#ADB8B2",
-  "#D4B9BC", "#A9B3BC"
+  "#FFB6C1", "#FFD1DC", "#B5EAD7", "#C7CEEA", "#FFDAC1",
+  "#F8C8DC", "#D4A5A5", "#92C9B1", "#A8DADC", "#F7D9C4",
+  "#E2C0E8", "#BFD7EA"
 ];
 
 const containerDom = document.getElementById("container");
@@ -206,7 +206,7 @@ function createHeart(){
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.innerHTML = "❤";
-  //莫兰迪低饱和随机颜色
+  //马卡龙随机颜色
   const ranColor = heartColors[Math.floor(Math.random()*heartColors.length)];
   heart.style.color = ranColor;
   //随机大小
@@ -225,10 +225,10 @@ function createHeart(){
     createBurst(rect.left+rect.width/2, rect.top+rect.height/2, ranColor);
     const randomSentence = sentenceList[Math.floor(Math.random()*sentenceList.length)];
     await showFadeText(randomSentence, ranColor);
-    //完整显示后停留3秒，然后淡出消失
+    //文字完整显示后停留 5秒，再淡出消失
     setTimeout(async ()=>{
       await closePopup();
-    },3000);
+    },5000);
   }
 
   setTimeout(()=>{
