@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>我们的计时</title>
+<title>C&F</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
@@ -24,49 +24,86 @@ body{
   text-align:center;
   box-shadow:0 8px 30px rgba(200,75,128,0.2);
   margin:16px;
+  z-index:10;
 }
 .title{
-  font-size:22px;
+  font-size:26px;
   margin-bottom:24px;
-  font-weight:500;
+  font-weight:bold;
 }
 .time-text{
   font-size:28px;
   font-weight:bold;
   line-height:1.8;
 }
-.desc{
-  margin-top:20px;
-  font-size:15px;
-  opacity:0.85;
-}
-/* 爱心飘落 */
+
+/* 飘落爱心 */
 .heart{
   position:fixed;
-  top:-40px;
-  z-index:-1;
-  color:#ff79a8;
-  font-size:24px;
-  pointer-events:none;
+  top:-60px;
+  z-index:2;
+  pointer-events:auto;
+  cursor:pointer;
   animation:fall linear forwards;
+  user-select:none;
 }
 @keyframes fall{
   0%{transform:translateY(0) rotate(0deg);opacity:1;}
   100%{transform:translateY(100vh) rotate(360deg);opacity:0;}
 }
+
+/* 点击爱心弹出文字弹窗 */
+#popup-box{
+  position:fixed;
+  left:0;
+  top:0;
+  width:100vw;
+  height:100vh;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:30px;
+}
+#popup-text{
+  font-family:"SimSun", "宋体",serif;
+  font-size:20px;
+  line-height:2;
+  text-align:center;
+  max-width:85%;
+}
 </style>
 </head>
 <body>
 <div id="container">
-  <div class="title">💗 我们在一起的时光 💗</div>
+  <div class="title">💗 C&F 💗</div>
   <div class="time-text" id="timer"></div>
-  <div class="desc">始于 2026‑03‑29 10:30</div>
+</div>
+
+<!-- 点击爱心弹出文字层 -->
+<div id="popup-box">
+  <div id="popup-text"></div>
 </div>
 
 <script>
-// 起始时间
+// 计时起始时间
 const startTime = new Date("2026-03-29T10:30:00+08:00").getTime();
 
+// 文案池
+const sentenceList = [
+  "想和你在一个慢下来的世界里交谈",
+  "我对永恒有着致命的追求，可没有什么是永恒的，当我接受当下时，当下就是永恒",
+  "春天苏州河畔会开满雪柳",
+  "有些相遇第一眼就写好了结局",
+  "我记性不好，会忘记很多事，但唯独会常常想起你",
+  "海边，夕阳，单车，我，你",
+  "希望我能越来越好，你也是"
+];
+
+//爱心随机颜色池
+const heartColors = ['#ff5983','#ff88bb','#ff3e77','#ffb3cc','#e8548c','#ff6699','#d84478'];
+
+//计时器更新
 function updateTimer(){
   const now = Date.now();
   let diff = now - startTime;
@@ -85,22 +122,80 @@ function updateTimer(){
   document.getElementById("timer").innerText =
     `${day} 天 ${hour} 小时 ${min} 分 ${sec} 秒`;
 }
-
-// 每秒刷新
 updateTimer();
 setInterval(updateTimer, 1000);
 
-// 爱心飘落
+
+//弹窗元素
+const popupBox = document.getElementById('popup-box');
+const popupTextDom = document.getElementById('popup-text');
+let typeTimer = null;
+
+//逐字打字显示
+async function showTypeText(text,color){
+  popupTextDom.style.color = color;
+  popupTextDom.innerText = '';
+  popupBox.style.display = 'flex';
+  let index = 0;
+  clearInterval(typeTimer);
+  return new Promise(resolve=>{
+    typeTimer = setInterval(()=>{
+      if(index < text.length){
+        popupTextDom.innerText += text.charAt(index);
+        index++;
+      }else{
+        clearInterval(typeTimer);
+        resolve();
+      }
+    },120);
+  })
+}
+
+//关闭弹窗
+function closePopup(){
+  clearInterval(typeTimer);
+  popupBox.style.display = 'none';
+  popupTextDom.innerText = '';
+}
+//点击任意位置关闭弹窗
+popupBox.addEventListener('click',closePopup);
+
+
+//生成飘落爱心
 function createHeart(){
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.innerHTML = "❤";
-  heart.style.left = Math.random()*100 + "vw";
-  heart.style.animationDuration = (4 + Math.random()*4)+"s";
+  //随机颜色
+  const ranColor = heartColors[Math.floor(Math.random()*heartColors.length)];
+  heart.style.color = ranColor;
+  //随机大小
+  const fontSize = 32 + Math.random()*42;
+  heart.style.fontSize = fontSize + "px";
+  heart.style.left = Math.random()*94 + "vw";
+  //下落随机时长
+  const fallDur = 5 + Math.random()*7;
+  heart.style.animationDuration = fallDur+"s";
   document.body.appendChild(heart);
-  setTimeout(()=>heart.remove(),8000);
+
+  //点击爱心事件：随机拿句子，逐字展示，3秒后自动关闭
+  heart.onclick = async function(e){
+    e.stopPropagation();
+    const randomSentence = sentenceList[Math.floor(Math.random()*sentenceList.length)];
+    await showTypeText(randomSentence, ranColor);
+    setTimeout(()=>{
+      closePopup();
+    },3000);
+  }
+
+  setTimeout(()=>{
+    heart.remove();
+  }, fallDur*1000 + 200);
 }
-setInterval(createHeart,400);
+
+//生成爱心间隔随机
+setInterval(createHeart, 550);
+
 </script>
 </body>
 </html>
