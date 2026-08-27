@@ -8,13 +8,26 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   min-height:100vh;
-  background:#ffd6e4;
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-  display:flex;
+  overflow:hidden;
+}
+/*页面容器，两个页面重叠，切换显示隐藏*/
+.page{
+  position:absolute;
+  width:100vw;
+  height:100vh;
+  display:none;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  overflow:hidden;
+}
+.page.active{
+  display:flex;
+}
+
+/*第一页样式*/
+#page1{
+  background:#ffd6e4;
   color:#c84b80;
 }
 #container{
@@ -38,6 +51,20 @@ body{
   line-height:1.8;
 }
 
+/*页面跳转按钮通用*/
+.page-btn{
+  position:fixed;
+  bottom:40px;
+  z-index:20;
+  padding:12px 28px;
+  border-radius:999px;
+  border:none;
+  background:#ffffff88;
+  font-size:17px;
+  cursor:pointer;
+  backdrop-filter:blur(4px);
+}
+
 /* 飘落爱心 */
 .heart{
   position:fixed;
@@ -53,7 +80,7 @@ body{
   100%{transform:translateY(100vh) rotate(360deg);opacity:0;}
 }
 
-/* 点击爱心弹出文字弹窗 */
+/* 第一页弹窗 */
 #popup-box{
   position:fixed;
   left:0;
@@ -88,24 +115,145 @@ body{
   0%{opacity:1;transform:translate(0,0) scale(1);}
   100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}
 }
+
+/* =========第二页========= */
+#page2{
+  /*使用背景图片，你替换图片地址即可*/
+  background:url("bg.png");
+  background-size:cover;
+  background-position:center;
+}
+/*信箱按钮*/
+.mail-btn{
+  position:absolute;
+  bottom:120px;
+  font-size:52px;
+  background:rgba(255,255,255,0.35);
+  backdrop-filter:blur(6px);
+  border:none;
+  border-radius:16px;
+  padding:14px 20px;
+  cursor:pointer;
+}
+/*信件弹窗遮罩*/
+#letter-wrap{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.35);
+  z-index:120;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+#letter-card{
+  background:#fff8f0;
+  border-radius:20px;
+  padding:36px 30px;
+  max-width:620px;
+  width:100%;
+  max-height:80vh;
+  overflow-y:auto;
+  box-shadow:0 10px 40px rgba(0,0,0,0.18);
+}
+.letter-header{
+  font-size:16px;
+  color:#886b58;
+  margin-bottom:20px;
+  text-align:right;
+}
+#letter-content{
+  font-family:"SimSun","宋体",serif;
+  font-size:18px;
+  line-height:2;
+  color:#443328;
+  white-space:pre-wrap;
+}
+.close-letter{
+  margin-top:24px;
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:0;
+  background:#e9d8c9;
+  font-size:16px;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
-<div id="container">
-  <div class="title">💗 C&F 💗</div>
-  <div class="time-text" id="timer"></div>
+
+<!--第一页：原有计时页面-->
+<div id="page1" class="page active">
+  <div id="container">
+    <div class="title">💗 C&F 💗</div>
+    <div class="time-text" id="timer"></div>
+  </div>
+  <button class="page-btn" id="toPage2">下一页 →</button>
 </div>
 
-<!-- 点击爱心弹出文字层 -->
+<!--第二页：自定义背景图片页面-->
+<div id="page2" class="page">
+  <button class="mail-btn" id="mailOpen">📩</button>
+  <button class="page-btn" id="toPage1">← 返回</button>
+</div>
+
+<!--第一页爱心弹窗-->
 <div id="popup-box">
   <div id="popup-text"></div>
 </div>
 
-<script>
-// 计时起始时间
-const startTime = new Date("2026-03-29T10:30:00+08:00").getTime();
+<!--信件弹窗 来自20260827的来信-->
+<div id="letter-wrap">
+  <div id="letter-card">
+    <div class="letter-header">来自 2026‑08‑27 的来信</div>
+    <div id="letter-content"></div>
+    <button class="close-letter" id="closeLetter">关闭信件</button>
+  </div>
+</div>
 
-// 文案池
+<script>
+// =========页面切换逻辑========
+const page1 = document.getElementById("page1");
+const page2 = document.getElementById("page2");
+document.getElementById("toPage2").onclick = ()=>{
+  page1.classList.remove("active");
+  page2.classList.add("active");
+}
+document.getElementById("toPage1").onclick = ()=>{
+  page2.classList.remove("active");
+  page1.classList.add("active");
+}
+
+//=====信件内容=====
+const letterText = `我总是不自觉地对你有所期待，小到一条消息的回复，可我有所期待就会有失望，我从来都没有拥有过什么，或者也可以说我失去的太多，我总是用力的想抓住什么，一段关系的开始是美好的，我就希望永远都是这么美好，为了维持这份美好，我会做出很多努力，我想尽力做到最好，因为我不想我失去的时候后悔，后悔为什么当时没有做好。`;
+const letterWrap = document.getElementById("letter-wrap");
+const letterContentDom = document.getElementById("letter-content");
+
+//信箱打开，逐字打印信件
+document.getElementById("mailOpen").onclick = async ()=>{
+  letterWrap.style.display = "flex";
+  letterContentDom.innerText = "";
+  let idx = 0;
+  await new Promise(resolve=>{
+    const type = setInterval(()=>{
+      if(idx < letterText.length){
+        letterContentDom.innerText += letterText.charAt(idx);
+        idx++;
+      }else{
+        clearInterval(type);
+        resolve();
+      }
+    },75);
+  })
+}
+document.getElementById("closeLetter").onclick = ()=>{
+  letterWrap.style.display = "none";
+  letterContentDom.innerText = "";
+}
+
+// =========第一页原有计时、爱心逻辑========
+const startTime = new Date("2026-03-29T10:30:00+08:00").getTime();
 const sentenceList = [
   "想和你在一个慢下来的世界里交谈",
   "我对永恒有着致命的追求，可没有什么是永恒的，当我接受当下时，当下就是永恒",
@@ -115,8 +263,7 @@ const sentenceList = [
   "海边，夕阳，单车，我，你",
   "希望我能越来越好，你也是"
 ];
-
-//马卡龙柔和色系
+//马卡龙色系
 const heartColors = [
   "#FFB6C1", "#FFD1DC", "#B5EAD7", "#C7CEEA", "#FFDAC1",
   "#F8C8DC", "#D4A5A5", "#92C9B1", "#A8DADC", "#F7D9C4",
@@ -124,7 +271,6 @@ const heartColors = [
 ];
 
 const containerDom = document.getElementById("container");
-//计时器更新
 function updateTimer(){
   const now = Date.now();
   let diff = now - startTime;
@@ -139,27 +285,20 @@ function updateTimer(){
   const min = Math.floor(diff / (1000 * 60));
   diff = diff % (1000 * 60);
   const sec = Math.floor(diff / 1000);
-
-  document.getElementById("timer").innerText =
-    `${day} 天 ${hour} 小时 ${min} 分 ${sec} 秒`;
+  document.getElementById("timer").innerText = `${day} 天 ${hour} 小时 ${min} 分 ${sec} 秒`;
 }
 updateTimer();
 setInterval(updateTimer, 1000);
 
-
-//弹窗元素
 const popupBox = document.getElementById('popup-box');
 const popupTextDom = document.getElementById('popup-text');
 
-//文字淡入
 async function showFadeText(text,color){
   popupTextDom.style.color = color;
   popupTextDom.innerText = text;
   popupTextDom.style.opacity = 0;
   popupBox.style.display = 'flex';
-  //隐藏计时器
   containerDom.style.opacity = "0";
-  //慢淡入
   await new Promise(resolve=>{
     setTimeout(()=>{
       popupTextDom.style.opacity = "1";
@@ -167,23 +306,18 @@ async function showFadeText(text,color){
     },50);
   })
 }
-
-//文字淡出关闭
 async function closePopup(){
   popupTextDom.style.opacity = "0";
   await new Promise(resolve=>setTimeout(resolve,1200));
   popupBox.style.display = 'none';
   popupTextDom.innerText = '';
-  //恢复计时器
   containerDom.style.opacity = "1";
 }
-//点击屏幕关闭弹窗
 popupBox.addEventListener('click',async ()=>{
   await closePopup();
 });
 
-
-//爱心炸开粒子特效
+//爱心炸开
 function createBurst(x,y,color){
   for(let i=0;i<10;i++){
     const p = document.createElement("div");
@@ -206,37 +340,27 @@ function createHeart(){
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.innerHTML = "❤";
-  //马卡龙随机颜色
   const ranColor = heartColors[Math.floor(Math.random()*heartColors.length)];
   heart.style.color = ranColor;
-  //随机大小
   const fontSize = 32 + Math.random()*42;
   heart.style.fontSize = fontSize + "px";
   heart.style.left = Math.random()*94 + "vw";
-  //下落随机时长
   const fallDur = 5 + Math.random()*7;
   heart.style.animationDuration = fallDur+"s";
   document.body.appendChild(heart);
 
-  //点击爱心事件：炸开特效，淡入文字，停留，淡出消失
   heart.onclick = async function(e){
     e.stopPropagation();
     const rect = heart.getBoundingClientRect();
     createBurst(rect.left+rect.width/2, rect.top+rect.height/2, ranColor);
     const randomSentence = sentenceList[Math.floor(Math.random()*sentenceList.length)];
     await showFadeText(randomSentence, ranColor);
-    //文字完整显示后停留 5秒，再淡出消失
     setTimeout(async ()=>{
       await closePopup();
     },5000);
   }
-
-  setTimeout(()=>{
-    heart.remove();
-  }, fallDur*1000 + 200);
+  setTimeout(()=>{heart.remove();}, fallDur*1000 + 200);
 }
-
-//生成爱心间隔随机
 setInterval(createHeart, 550);
 
 </script>
