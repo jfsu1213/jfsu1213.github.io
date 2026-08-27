@@ -287,15 +287,17 @@ body{
   min-width:max-content;
 }
 .num-item{
-  width:34px;
-  height:34px;
+  width:42px;
+  height:42px;
   flex-shrink:0;
   display:flex;
   align-items:center;
   justify-content:center;
   border-radius:6px;
   background:#ffe0b2;
-  font-size:15px;
+  font-size:16px;
+  cursor:pointer;
+  user-select:none;
 }
 .num-item.player{
   background:#ff9800;
@@ -304,6 +306,10 @@ body{
 .num-item.computer{
   background:#f4511e;
   color:white;
+}
+.num-item.disabled{
+  cursor:not-allowed;
+  opacity:0.45;
 }
 .game-status{
   text-align:center;
@@ -323,21 +329,6 @@ body{
   border:none;
   background:#ffcc80;
   font-size:16px;
-  cursor:pointer;
-}
-.game-buttons{
-  display:flex;
-  gap:14px;
-  justify-content:center;
-  margin-bottom:12px;
-}
-.game-buttons button{
-  padding:12px 24px;
-  border-radius:12px;
-  border:none;
-  background:#ff9800;
-  color:white;
-  font-size:17px;
   cursor:pointer;
 }
 .game-reset-wrap{
@@ -430,10 +421,6 @@ body{
       <button id="goFirst">我先手</button>
       <button id="goSecond">我后手</button>
     </div>
-    <div class="game-buttons" id="playerBtnWrap" style="display:none;">
-      <button id="call1">报1个数</button>
-      <button id="call2">报2个数</button>
-    </div>
     <div class="game-reset-wrap">
       <button class="game-reset" id="gameReset">重新开始</button>
     </div>
@@ -452,7 +439,7 @@ body{
 谁被迫报到炸弹数字，谁就输掉本局。<br><br>
 1.开局随机生成10‑50之间的炸弹数字；<br>
 2.你可以选择先手或者后手；<br>
-3.每回合你可以报1个或者2个数字；<br>
+3.每回合你可以点击数字，只能报1个或者连续2个数字；<br>
 4.逼迫电脑报到炸弹数字即可胜利，胜利后解锁信箱密码。
     </p>
     <button class="close-rule" id="closeRuleBtn">了解了</button>
@@ -686,7 +673,6 @@ const bombInfoDom = document.getElementById("bombInfo");
 const numBarDom = document.getElementById("numBar");
 const gameStatusDom = document.getElementById("gameStatus");
 const selectSideWrap = document.getElementById("selectSideWrap");
-const playerBtnWrap = document.getElementById("playerBtnWrap");
 const passwordHintDom = document.getElementById("passwordHint");
 
 //初始化一局游戏
@@ -704,7 +690,6 @@ function initGame(){
   renderNumberBar();
   gameStatusDom.innerText = "请选择先手或者后手开始游戏";
   selectSideWrap.style.display = "flex";
-  playerBtnWrap.style.display = "none";
 }
 
 //渲染数字条
@@ -721,26 +706,46 @@ function renderNumberBar(){
         span.classList.add("computer");
       }
     }
+    //未到回合/已经报过/游戏结束，禁止点击
+    if(!isPlayerTurn || i <= currentNum || gameOver){
+      span.classList.add("disabled");
+    }else{
+      span.classList.remove("disabled");
+      span.onclick = ()=>handleNumberClick(i);
+    }
     numBarDom.appendChild(span);
   }
+}
+
+//玩家点击数字，只允许点击currentNum+1 或者 currentNum+2
+async function handleNumberClick(clickNum){
+  if(gameOver || !isPlayerTurn) return;
+  const allow1 = currentNum + 1;
+  const allow2 = currentNum + 2;
+  if(clickNum !== allow1 && clickNum !== allow2){
+    gameStatusDom.innerText = `只能点击 ${allow1} 或者 ${allow2}`;
+    return;
+  }
+  const cnt = clickNum - currentNum;
+  await playerCall(cnt);
 }
 
 //玩家选择先手
 document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
-  playerBtnWrap.style.display = "flex";
   isPlayerTurn = true;
   window._markPlayerSet = new Set();
-  gameStatusDom.innerText = "轮到你操作，请报1或2个数";
+  gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
+  renderNumberBar();
 }
 
 //玩家选择后手，电脑先手
 document.getElementById("goSecond").onclick = async ()=>{
   selectSideWrap.style.display = "none";
-  playerBtnWrap.style.display = "flex";
   window._markPlayerSet = new Set();
   isPlayerTurn = false;
   gameStatusDom.innerText = "电脑思考中...";
+  renderNumberBar();
   await sleep(1000);
   computerTurn();
 }
@@ -748,17 +753,6 @@ document.getElementById("goSecond").onclick = async ()=>{
 //休眠工具
 function sleep(ms){
   return new Promise(resolve=>setTimeout(resolve,ms));
-}
-
-//玩家点击报1个数
-document.getElementById("call1").onclick = async ()=>{
-  if(gameOver || !isPlayerTurn) return;
-  await playerCall(1);
-}
-//玩家点击报2个数
-document.getElementById("call2").onclick = async ()=>{
-  if(gameOver || !isPlayerTurn) return;
-  await playerCall(2);
 }
 
 //玩家报数逻辑
@@ -770,14 +764,14 @@ async function playerCall(cnt){
   }
   currentNum = newEnd;
   renderNumberBar();
-  gameStatusDom.innerText = `你报了：${cnt===1?newEnd:(newEnd-1)+"、"+newEnd}`;
+  gameStatusDom.innerText = `你报到：${newEnd}`;
 
   //判断是否踩到炸弹
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = false;
     gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！`;
-    playerBtnWrap.style.display = "none";
+    renderNumberBar();
     return;
   }
   isPlayerTurn = false;
@@ -805,17 +799,19 @@ async function computerTurn(){
   //电脑报数，不加入玩家标记集合
   currentNum = newEnd;
   renderNumberBar();
-  gameStatusDom.innerText = `电脑报了：${step===1?newEnd:(newEnd-1)+"、"+newEnd}`;
+  gameStatusDom.innerText = `电脑报到：${newEnd}`;
 
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = true;
     gameStatusDom.innerText = `🎉游戏结束！电脑报到炸弹数字${bombNum}，你赢啦！密码已解锁！`;
-    playerBtnWrap.style.display = "none";
     passwordHintDom.style.display = "block";
+    renderNumberBar();
     return;
   }
   isPlayerTurn = true;
+  gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
+  renderNumberBar();
 }
 
 //重新开始按钮
