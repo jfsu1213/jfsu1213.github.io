@@ -19,6 +19,7 @@ body{
   opacity:0;
   pointer-events:none;
   transition: opacity 0.8s ease;
+  display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -122,7 +123,7 @@ body{
 /* =========第二页========= */
 #page2{
   /*使用背景图片，你替换图片地址即可*/
-  background:url("bg.jpg");
+  background:url("bg.png");
   background-size:cover;
   background-position:center;
   overflow-y:auto;
@@ -245,7 +246,6 @@ body{
   padding:24px 20px;
   max-width:640px;
   width:94%;
-  margin-top:20px;
   box-shadow:0 6px 24px rgba(255,152,0,0.25);
 }
 .game-title{
@@ -262,22 +262,17 @@ body{
   color:#d84315;
   font-weight:bold;
 }
-.game-tip-switch{
+.rule-btn-wrap{
   text-align:right;
   margin-bottom:10px;
 }
-.game-tip-switch label{
-  font-size:14px;
-  color:#774400;
-}
-.strategy-tip{
+.rule-btn{
+  padding:4px 10px;
+  border-radius:6px;
+  border:1px solid #ffb74d;
   background:#fff2cc;
-  padding:10px;
-  border-radius:10px;
   font-size:14px;
-  color:#b35900;
-  margin-bottom:12px;
-  display:none;
+  cursor:pointer;
 }
 .num-bar-wrap{
   overflow-x:auto;
@@ -365,6 +360,47 @@ body{
   font-weight:bold;
   display:none;
 }
+
+/*游戏规则弹窗*/
+#rule-wrap{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  z-index:130;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.rule-card{
+  background:#fffef5;
+  border-radius:18px;
+  max-width:520px;
+  width:100%;
+  max-height:70vh;
+  overflow-y:auto;
+  padding:24px;
+}
+.rule-card h3{
+  text-align:center;
+  color:#e66500;
+  margin-bottom:14px;
+}
+.rule-card p{
+  line-height:1.8;
+  font-size:15px;
+  color:#444;
+}
+.close-rule{
+  width:100%;
+  margin-top:16px;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#ffcc80;
+  cursor:pointer;
+  font-size:16px;
+}
 </style>
 </head>
 <body>
@@ -383,10 +419,9 @@ body{
   <div class="game-box">
     <div class="game-title">💣炸弹数字报数游戏</div>
     <div class="bomb-info" id="bombInfo">炸弹数字：--</div>
-    <div class="game-tip-switch">
-      <label><input type="checkbox" id="tipSwitch"> 开启必胜提示</label>
+    <div class="rule-btn-wrap">
+      <button class="rule-btn" id="openRuleBtn">📖游戏规则</button>
     </div>
-    <div class="strategy-tip" id="strategyTip"></div>
     <div class="num-bar-wrap">
       <div class="num-bar" id="numBar"></div>
     </div>
@@ -407,6 +442,21 @@ body{
 
   <button class="mail-btn" id="mailOpen">📩</button>
   <button class="page-btn" id="toPage1">← 返回</button>
+</div>
+
+<!--游戏规则弹窗-->
+<div id="rule-wrap">
+  <div class="rule-card">
+    <h3>📖游戏规则</h3>
+    <p>两名玩家轮流报数，从数字1开始，每人每次可以报1‑2个连续数字。<br>
+谁被迫报到炸弹数字，谁就输掉本局。<br><br>
+1.开局随机生成10‑50之间的炸弹数字；<br>
+2.你可以选择先手或者后手；<br>
+3.每回合你可以报1个或者2个数字；<br>
+4.逼迫电脑报到炸弹数字即可胜利，胜利后解锁信箱密码。
+    </p>
+    <button class="close-rule" id="closeRuleBtn">了解了</button>
+  </div>
 </div>
 
 <!--密码弹窗-->
@@ -450,6 +500,15 @@ document.getElementById("toPage2").onclick = ()=>{
 document.getElementById("toPage1").onclick = ()=>{
   page2.classList.remove("active");
   page1.classList.add("active");
+}
+
+//====游戏规则弹窗====
+const ruleWrap = document.getElementById("rule-wrap");
+document.getElementById("openRuleBtn").onclick = ()=>{
+  ruleWrap.style.display = "flex";
+}
+document.getElementById("closeRuleBtn").onclick = ()=>{
+  ruleWrap.style.display = "none";
 }
 
 //=====信件内容=====
@@ -581,8 +640,9 @@ function createBurst(x,y,color){
   }
 }
 
-//生成飘落爱心
+//生成飘落爱心，只在page1处于active时才生成
 function createHeart(){
+  if(!page1.classList.contains("active")) return;
   const heart = document.createElement("div");
   heart.className = "heart";
   heart.innerHTML = "❤";
@@ -627,8 +687,6 @@ const numBarDom = document.getElementById("numBar");
 const gameStatusDom = document.getElementById("gameStatus");
 const selectSideWrap = document.getElementById("selectSideWrap");
 const playerBtnWrap = document.getElementById("playerBtnWrap");
-const tipSwitchDom = document.getElementById("tipSwitch");
-const strategyTipDom = document.getElementById("strategyTip");
 const passwordHintDom = document.getElementById("passwordHint");
 
 //初始化一局游戏
@@ -647,7 +705,6 @@ function initGame(){
   gameStatusDom.innerText = "请选择先手或者后手开始游戏";
   selectSideWrap.style.display = "flex";
   playerBtnWrap.style.display = "none";
-  strategyTipDom.style.display = "none";
 }
 
 //渲染数字条
@@ -668,28 +725,6 @@ function renderNumberBar(){
   }
 }
 
-//更新策略提示
-function updateStrategyHint(){
-  if(!tipSwitchDom.checked){
-    strategyTipDom.style.display = "none";
-    return;
-  }
-  strategyTipDom.style.display = "block";
-  const target = bombNum - 1;
-  const remain = target - currentNum;
-  const rem = remain % 3;
-  if(rem === 0){
-    strategyTipDom.innerText = `💡提示：目标抢到 ${target}，当前剩余${remain}，你无论报1或2，电脑都可以凑3。`;
-  }else{
-    strategyTipDom.innerText = `💡提示：目标抢到 ${target}，你应该报${rem}个数字，抢到关键数！`;
-  }
-}
-
-tipSwitchDom.addEventListener("change",()=>{
-  if(!gameOver) updateStrategyHint();
-  else strategyTipDom.style.display = "none";
-})
-
 //玩家选择先手
 document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
@@ -697,7 +732,6 @@ document.getElementById("goFirst").onclick = ()=>{
   isPlayerTurn = true;
   window._markPlayerSet = new Set();
   gameStatusDom.innerText = "轮到你操作，请报1或2个数";
-  updateStrategyHint();
 }
 
 //玩家选择后手，电脑先手
@@ -746,7 +780,6 @@ async function playerCall(cnt){
     playerBtnWrap.style.display = "none";
     return;
   }
-  updateStrategyHint();
   isPlayerTurn = false;
   await sleep(1000);
   computerTurn();
@@ -782,7 +815,6 @@ async function computerTurn(){
     passwordHintDom.style.display = "block";
     return;
   }
-  updateStrategyHint();
   isPlayerTurn = true;
 }
 
