@@ -499,7 +499,7 @@ document.getElementById("closeRuleBtn").onclick = ()=>{
 }
 
 //=====信件内容=====
-const letterText = `我从来都没有拥有过什么，或者也可以说我失去的太多，我总是想用力的想抓住什么，我哥送的一副耳机，小颖儿送的一个手链，我妈织的毛衣，又或者是一张朋友随手拍下的我的照片，这些所有承载着美好的事物，我都希望能永远拥有，一段关系的开始是美好的，我就希望永远都是这么美好，为了抓住这些美好，我会做出很多努力，我希望耳机手链毛衣永远不会坏，照片永远都保存下来，关系永远这么美好，可永远好像很难，我想尽力做到最好，因为我不想我失去的时候后悔，后悔为什么当时没有做好，如果我所珍视的这些注定都会消失，那我希望能他们能够停留的久一点，再多一些美好的瞬间，常用，常戴，常穿，常记录，常见面。`;
+const letterText = `我从来都没有拥有过什么，或者也可以说我失去的太多，我总是想用力的想抓住什么，我哥送的一副耳机，小颖儿送的一个手链，我妈织的毛衣，又或者是一张朋友随手拍下的我的照片，这些所有承载着美好的事物，我都希望能永远拥有，一段关系的开始是美好的，我就希望永远都是这么美好，为了抓住这些美好，我会做出很多努力，我希望耳机手链毛衣永远不会坏，照片永远都保存下来，关系永远这么美好，可永远好像很难，我想尽力做到最好，因为我不想我失去的时候后悔，后悔为什么当时没有做好，如果我所珍视的这些注定都会消失，那我希望能它们能够停留的久一点，再多一些美好的瞬间，常用，常戴，常穿，常记录，常见面。`;
 const letterWrap = document.getElementById("letter-wrap");
 const letterContentDom = document.getElementById("letter-content");
 
@@ -735,7 +735,7 @@ document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
   isPlayerTurn = true;
   window._markPlayerSet = new Set();
-  gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
+  gameStatusDom.innerText = "轮到你操作，请点击后一个或者后两个数字";
   renderNumberBar();
 }
 
@@ -770,7 +770,7 @@ async function playerCall(cnt){
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = false;
-    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！`;
+    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，defeat！加油哦`;
     renderNumberBar();
     return;
   }
