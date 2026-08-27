@@ -11,18 +11,21 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   overflow:hidden;
 }
-/*页面容器，两个页面重叠，切换显示隐藏*/
+/*页面容器，支持渐入渐出切换*/
 .page{
   position:absolute;
   width:100vw;
   height:100vh;
-  display:none;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 0.8s ease;
   flex-direction:column;
   align-items:center;
   justify-content:center;
 }
 .page.active{
-  display:flex;
+  opacity:1;
+  pointer-events:auto;
 }
 
 /*第一页样式*/
@@ -119,9 +122,11 @@ body{
 /* =========第二页========= */
 #page2{
   /*使用背景图片，你替换图片地址即可*/
-  background:url("bg.png");
+  background:url("bg.jpg");
   background-size:cover;
   background-position:center;
+  overflow-y:auto;
+  padding-bottom:140px;
 }
 /*信箱按钮*/
 .mail-btn{
@@ -134,7 +139,60 @@ body{
   border-radius:16px;
   padding:14px 20px;
   cursor:pointer;
+  z-index:10;
 }
+/*密码输入弹窗*/
+#password-wrap{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  z-index:115;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.pwd-card{
+  background:#fff;
+  border-radius:16px;
+  padding:30px;
+  max-width:340px;
+  width:100%;
+  text-align:center;
+}
+.pwd-card h3{
+  margin-bottom:16px;
+  color:#555;
+}
+.pwd-card input{
+  width:100%;
+  padding:12px;
+  font-size:20px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  margin-bottom:16px;
+  text-align:center;
+}
+.pwd-buttons{
+  display:flex;
+  gap:12px;
+}
+.pwd-buttons button{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  font-size:16px;
+  cursor:pointer;
+}
+.btn-confirm{
+  background:#ffb74d;
+  color:#fff;
+}
+.btn-cancel{
+  background:#eee;
+}
+
 /*信件弹窗遮罩*/
 #letter-wrap{
   position:fixed;
@@ -179,6 +237,134 @@ body{
   font-size:16px;
   cursor:pointer;
 }
+
+/*========炸弹报数小游戏 巴什博弈========*/
+.game-box{
+  background:rgba(255,248,230,0.92);
+  border-radius:22px;
+  padding:24px 20px;
+  max-width:640px;
+  width:94%;
+  margin-top:20px;
+  box-shadow:0 6px 24px rgba(255,152,0,0.25);
+}
+.game-title{
+  text-align:center;
+  font-size:22px;
+  color:#e66500;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+.bomb-info{
+  text-align:center;
+  font-size:19px;
+  margin-bottom:14px;
+  color:#d84315;
+  font-weight:bold;
+}
+.game-tip-switch{
+  text-align:right;
+  margin-bottom:10px;
+}
+.game-tip-switch label{
+  font-size:14px;
+  color:#774400;
+}
+.strategy-tip{
+  background:#fff2cc;
+  padding:10px;
+  border-radius:10px;
+  font-size:14px;
+  color:#b35900;
+  margin-bottom:12px;
+  display:none;
+}
+.num-bar-wrap{
+  overflow-x:auto;
+  padding:8px 4px;
+  background:#fff;
+  border-radius:12px;
+  margin-bottom:14px;
+}
+.num-bar{
+  display:flex;
+  gap:4px;
+  min-width:max-content;
+}
+.num-item{
+  width:34px;
+  height:34px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  background:#ffe0b2;
+  font-size:15px;
+}
+.num-item.player{
+  background:#ff9800;
+  color:white;
+}
+.num-item.computer{
+  background:#f4511e;
+  color:white;
+}
+.game-status{
+  text-align:center;
+  font-size:17px;
+  margin-bottom:14px;
+  min-height:24px;
+}
+.game-select-side{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+.game-select-side button{
+  padding:10px 20px;
+  border-radius:10px;
+  border:none;
+  background:#ffcc80;
+  font-size:16px;
+  cursor:pointer;
+}
+.game-buttons{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.game-buttons button{
+  padding:12px 24px;
+  border-radius:12px;
+  border:none;
+  background:#ff9800;
+  color:white;
+  font-size:17px;
+  cursor:pointer;
+}
+.game-reset-wrap{
+  text-align:center;
+}
+.game-reset{
+  padding:10px 22px;
+  border-radius:10px;
+  border:none;
+  background:#f57c00;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+.game-password-hint{
+  margin-top:12px;
+  text-align:center;
+  font-size:16px;
+  color:#c0392b;
+  font-weight:bold;
+  display:none;
+}
 </style>
 </head>
 <body>
@@ -194,8 +380,45 @@ body{
 
 <!--第二页：自定义背景图片页面-->
 <div id="page2" class="page">
+  <div class="game-box">
+    <div class="game-title">💣炸弹数字报数游戏</div>
+    <div class="bomb-info" id="bombInfo">炸弹数字：--</div>
+    <div class="game-tip-switch">
+      <label><input type="checkbox" id="tipSwitch"> 开启必胜提示</label>
+    </div>
+    <div class="strategy-tip" id="strategyTip"></div>
+    <div class="num-bar-wrap">
+      <div class="num-bar" id="numBar"></div>
+    </div>
+    <div class="game-status" id="gameStatus">请选择先手或者后手开始游戏</div>
+    <div class="game-select-side" id="selectSideWrap">
+      <button id="goFirst">我先手</button>
+      <button id="goSecond">我后手</button>
+    </div>
+    <div class="game-buttons" id="playerBtnWrap" style="display:none;">
+      <button id="call1">报1个数</button>
+      <button id="call2">报2个数</button>
+    </div>
+    <div class="game-reset-wrap">
+      <button class="game-reset" id="gameReset">重新开始</button>
+    </div>
+    <div class="game-password-hint" id="passwordHint">信箱密码：0827</div>
+  </div>
+
   <button class="mail-btn" id="mailOpen">📩</button>
   <button class="page-btn" id="toPage1">← 返回</button>
+</div>
+
+<!--密码弹窗-->
+<div id="password-wrap">
+  <div class="pwd-card">
+    <h3>请输入信箱密码</h3>
+    <input type="password" id="pwdInput" placeholder="输入4位密码">
+    <div class="pwd-buttons">
+      <button class="btn-cancel" id="pwdCancel">取消</button>
+      <button class="btn-confirm" id="pwdConfirm">确认</button>
+    </div>
+  </div>
 </div>
 
 <!--第一页爱心弹窗-->
@@ -203,7 +426,7 @@ body{
   <div id="popup-text"></div>
 </div>
 
-<!--信件弹窗 来自20260827的来信-->
+<!--信件弹窗 来自2026‑08‑27的来信-->
 <div id="letter-wrap">
   <div id="letter-card">
     <div class="letter-header">来自 2026‑08‑27 的来信</div>
@@ -213,10 +436,14 @@ body{
 </div>
 
 <script>
-// =========页面切换逻辑========
+// =========页面切换逻辑，带渐入渐出，切换第二页清除全部爱心dom========
 const page1 = document.getElementById("page1");
 const page2 = document.getElementById("page2");
+const allHeartList = ()=>document.querySelectorAll(".heart");
+
 document.getElementById("toPage2").onclick = ()=>{
+  //切换到第二页，清除所有飘落爱心
+  allHeartList().forEach(h=>h.remove());
   page1.classList.remove("active");
   page2.classList.add("active");
 }
@@ -230,8 +457,27 @@ const letterText = `我总是不自觉地对你有所期待，小到一条消息
 const letterWrap = document.getElementById("letter-wrap");
 const letterContentDom = document.getElementById("letter-content");
 
-//信箱打开，逐字打印信件
-document.getElementById("mailOpen").onclick = async ()=>{
+//信箱点击，弹出密码输入框
+document.getElementById("mailOpen").onclick = ()=>{
+  document.getElementById("password-wrap").style.display = "flex";
+  document.getElementById("pwdInput").value = "";
+}
+//密码确认
+document.getElementById("pwdConfirm").onclick = ()=>{
+  const inputVal = document.getElementById("pwdInput").value.trim();
+  if(inputVal === "0827"){
+    document.getElementById("password-wrap").style.display = "none";
+    openLetter();
+  }else{
+    alert("密码错误，请重试");
+  }
+}
+document.getElementById("pwdCancel").onclick = ()=>{
+  document.getElementById("password-wrap").style.display = "none";
+}
+
+//打开信件逐字打印
+async function openLetter(){
   letterWrap.style.display = "flex";
   letterContentDom.innerText = "";
   let idx = 0;
@@ -362,6 +608,191 @@ function createHeart(){
   setTimeout(()=>{heart.remove();}, fallDur*1000 + 200);
 }
 setInterval(createHeart, 550);
+
+
+//====================炸弹报数游戏（巴什博弈）====================
+/*
+游戏规则：
+两名玩家轮流报数，从数字1开始，每人每次可以报1个或2个连续的数字，谁被迫报到炸弹数字谁就输。
+关键数base = 1+2 = 3；目标抢到 bombNum‑1
+*/
+let bombNum = 0;         //炸弹数字
+let currentNum = 0;      //当前报到到数字
+let gameOver = false;
+let isPlayerTurn = false;
+let playerWin = false;
+
+const bombInfoDom = document.getElementById("bombInfo");
+const numBarDom = document.getElementById("numBar");
+const gameStatusDom = document.getElementById("gameStatus");
+const selectSideWrap = document.getElementById("selectSideWrap");
+const playerBtnWrap = document.getElementById("playerBtnWrap");
+const tipSwitchDom = document.getElementById("tipSwitch");
+const strategyTipDom = document.getElementById("strategyTip");
+const passwordHintDom = document.getElementById("passwordHint");
+
+//初始化一局游戏
+function initGame(){
+  //10~50随机炸弹数字
+  bombNum = Math.floor(Math.random()*41)+10;
+  currentNum = 0;
+  gameOver = false;
+  playerWin = false;
+  isPlayerTurn = false;
+  passwordHintDom.style.display = "none";
+
+  bombInfoDom.innerText = `炸弹数字：${bombNum}🔴`;
+  //渲染数字条
+  renderNumberBar();
+  gameStatusDom.innerText = "请选择先手或者后手开始游戏";
+  selectSideWrap.style.display = "flex";
+  playerBtnWrap.style.display = "none";
+  strategyTipDom.style.display = "none";
+}
+
+//渲染数字条
+function renderNumberBar(){
+  numBarDom.innerHTML = "";
+  for(let i=1;i<=bombNum;i++){
+    const span = document.createElement("div");
+    span.className = "num-item";
+    span.innerText = i;
+    if(i <= currentNum){
+      if(window._markPlayerSet && window._markPlayerSet.has(i)){
+        span.classList.add("player");
+      }else{
+        span.classList.add("computer");
+      }
+    }
+    numBarDom.appendChild(span);
+  }
+}
+
+//更新策略提示
+function updateStrategyHint(){
+  if(!tipSwitchDom.checked){
+    strategyTipDom.style.display = "none";
+    return;
+  }
+  strategyTipDom.style.display = "block";
+  const target = bombNum - 1;
+  const remain = target - currentNum;
+  const rem = remain % 3;
+  if(rem === 0){
+    strategyTipDom.innerText = `💡提示：目标抢到 ${target}，当前剩余${remain}，你无论报1或2，电脑都可以凑3。`;
+  }else{
+    strategyTipDom.innerText = `💡提示：目标抢到 ${target}，你应该报${rem}个数字，抢到关键数！`;
+  }
+}
+
+tipSwitchDom.addEventListener("change",()=>{
+  if(!gameOver) updateStrategyHint();
+  else strategyTipDom.style.display = "none";
+})
+
+//玩家选择先手
+document.getElementById("goFirst").onclick = ()=>{
+  selectSideWrap.style.display = "none";
+  playerBtnWrap.style.display = "flex";
+  isPlayerTurn = true;
+  window._markPlayerSet = new Set();
+  gameStatusDom.innerText = "轮到你操作，请报1或2个数";
+  updateStrategyHint();
+}
+
+//玩家选择后手，电脑先手
+document.getElementById("goSecond").onclick = async ()=>{
+  selectSideWrap.style.display = "none";
+  playerBtnWrap.style.display = "flex";
+  window._markPlayerSet = new Set();
+  isPlayerTurn = false;
+  gameStatusDom.innerText = "电脑思考中...";
+  await sleep(1000);
+  computerTurn();
+}
+
+//休眠工具
+function sleep(ms){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
+
+//玩家点击报1个数
+document.getElementById("call1").onclick = async ()=>{
+  if(gameOver || !isPlayerTurn) return;
+  await playerCall(1);
+}
+//玩家点击报2个数
+document.getElementById("call2").onclick = async ()=>{
+  if(gameOver || !isPlayerTurn) return;
+  await playerCall(2);
+}
+
+//玩家报数逻辑
+async function playerCall(cnt){
+  let newEnd = currentNum + cnt;
+  //标记玩家报的数字
+  for(let i=currentNum+1;i<=newEnd;i++){
+    window._markPlayerSet.add(i);
+  }
+  currentNum = newEnd;
+  renderNumberBar();
+  gameStatusDom.innerText = `你报了：${cnt===1?newEnd:(newEnd-1)+"、"+newEnd}`;
+
+  //判断是否踩到炸弹
+  if(currentNum >= bombNum){
+    gameOver = true;
+    playerWin = false;
+    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！`;
+    playerBtnWrap.style.display = "none";
+    return;
+  }
+  updateStrategyHint();
+  isPlayerTurn = false;
+  await sleep(1000);
+  computerTurn();
+}
+
+//电脑回合，巴什博弈必胜策略
+async function computerTurn(){
+  if(gameOver) return;
+  const target = bombNum - 1;
+  let step;
+  const remain = target - currentNum;
+  const rem = remain % 3;
+  if(rem > 0){
+    step = rem;
+  }else{
+    //无法必胜，随机1~2
+    step = Math.random()>0.5?1:2;
+  }
+  //防止越界
+  if(currentNum + step > bombNum) step = 1;
+
+  let newEnd = currentNum + step;
+  //电脑报数，不加入玩家标记集合
+  currentNum = newEnd;
+  renderNumberBar();
+  gameStatusDom.innerText = `电脑报了：${step===1?newEnd:(newEnd-1)+"、"+newEnd}`;
+
+  if(currentNum >= bombNum){
+    gameOver = true;
+    playerWin = true;
+    gameStatusDom.innerText = `🎉游戏结束！电脑报到炸弹数字${bombNum}，你赢啦！密码已解锁！`;
+    playerBtnWrap.style.display = "none";
+    passwordHintDom.style.display = "block";
+    return;
+  }
+  updateStrategyHint();
+  isPlayerTurn = true;
+}
+
+//重新开始按钮
+document.getElementById("gameReset").onclick = ()=>{
+  initGame();
+}
+
+//页面加载初始化游戏
+initGame();
 
 </script>
 </body>
