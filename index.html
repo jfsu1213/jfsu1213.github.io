@@ -28,7 +28,6 @@ body{
   opacity:1;
   pointer-events:auto;
 }
-
 /*第一页样式*/
 #page1{
   background:#ffd6e4;
@@ -54,7 +53,6 @@ body{
   font-weight:bold;
   line-height:1.8;
 }
-
 /*页面跳转按钮通用*/
 .page-btn{
   position:fixed;
@@ -68,7 +66,6 @@ body{
   cursor:pointer;
   backdrop-filter:blur(4px);
 }
-
 /* =========背景音乐按钮 移到左上角 =========*/
 .bgm-btn{
   position:fixed;
@@ -85,7 +82,6 @@ body{
   cursor:pointer;
   display:none;
 }
-
 /* 飘落爱心 */
 .heart{
   position:fixed;
@@ -100,7 +96,6 @@ body{
   0%{transform:translateY(0) rotate(0deg);opacity:1;}
   100%{transform:translateY(100vh) rotate(360deg);opacity:0;}
 }
-
 /* 第一页弹窗 */
 #popup-box{
   position:fixed;
@@ -123,7 +118,6 @@ body{
   opacity:0;
   transition: opacity 1.2s ease;
 }
-
 /*炸开粒子*/
 .particle{
   position:fixed;
@@ -136,7 +130,6 @@ body{
   0%{opacity:1;transform:translate(0,0) scale(1);}
   100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}
 }
-
 /* =========第二页========= */
 #page2{
   /*使用背景图片，你替换图片地址即可*/
@@ -210,7 +203,6 @@ body{
 .btn-cancel{
   background:#eee;
 }
-
 /*信件弹窗遮罩*/
 #letter-wrap{
   position:fixed;
@@ -255,7 +247,6 @@ body{
   font-size:16px;
   cursor:pointer;
 }
-
 /*========炸弹报数小游戏 巴什博弈========*/
 .game-box{
   background:rgba(255,248,230,0.92);
@@ -368,7 +359,6 @@ body{
   font-weight:bold;
   display:none;
 }
-
 /*游戏规则弹窗*/
 #rule-wrap{
   position:fixed;
@@ -412,12 +402,10 @@ body{
 </style>
 </head>
 <body>
-
 <audio id="bgmAudio" loop preload="auto">
   <source src="周杰伦 - 最长的电影.mp3" type="audio/mpeg">
 
 <button class="bgm-btn" id="bgmToggle">🔊</button>
-
 <!--第一页：原有计时页面-->
 <div id="page1" class="page active">
   <div id="container">
@@ -426,7 +414,6 @@ body{
   </div>
   <button class="page-btn" id="toPage2">下一页 →</button>
 </div>
-
 <!--第二页：自定义背景图片页面-->
 <div id="page2" class="page">
   <div class="game-box">
@@ -448,11 +435,9 @@ body{
     </div>
     <div class="game-password-hint" id="passwordHint">信箱密码：0827</div>
   </div>
-
   <button class="mail-btn" id="mailOpen">📩</button>
   <button class="page-btn" id="toPage1">← 返回</button>
 </div>
-
 <!--游戏规则弹窗-->
 <div id="rule-wrap">
   <div class="rule-card">
@@ -467,7 +452,6 @@ body{
     <button class="close-rule" id="closeRuleBtn">了解了</button>
   </div>
 </div>
-
 <!--密码弹窗-->
 <div id="password-wrap">
   <div class="pwd-card">
@@ -479,12 +463,10 @@ body{
     </div>
   </div>
 </div>
-
 <!--第一页爱心弹窗-->
 <div id="popup-box">
   <div id="popup-text"></div>
 </div>
-
 <!--信件弹窗 来自2026‑08‑27的来信-->
 <div id="letter-wrap">
   <div id="letter-card">
@@ -493,18 +475,15 @@ body{
     <button class="close-letter" id="closeLetter">关闭信件</button>
   </div>
 </div>
-
 <script>
 // =========页面切换逻辑，带渐入渐出，切换第二页清除全部爱心dom========
 const page1 = document.getElementById("page1");
 const page2 = document.getElementById("page2");
 const allHeartList = ()=>document.querySelectorAll(".heart");
-
 // =====背景音乐逻辑=====
 const bgmAudio = document.getElementById('bgmAudio');
 const bgmToggleBtn = document.getElementById('bgmToggle');
 let bgmPlaying = false;
-
 bgmToggleBtn.onclick = function(){
   if(bgmPlaying){
     bgmAudio.pause();
@@ -519,7 +498,6 @@ bgmToggleBtn.onclick = function(){
     })
   }
 }
-
 document.getElementById("toPage2").onclick = ()=>{
   //切换到第二页，清除所有飘落爱心
   allHeartList().forEach(h=>h.remove());
@@ -536,7 +514,6 @@ document.getElementById("toPage1").onclick = ()=>{
   bgmToggleBtn.innerText = "🔊";
   bgmToggleBtn.style.display = "none";
 }
-
 //====游戏规则弹窗====
 const ruleWrap = document.getElementById("rule-wrap");
 document.getElementById("openRuleBtn").onclick = ()=>{
@@ -545,12 +522,10 @@ document.getElementById("openRuleBtn").onclick = ()=>{
 document.getElementById("closeRuleBtn").onclick = ()=>{
   ruleWrap.style.display = "none";
 }
-
 //=====信件内容【已更新为新文本】=====
 const letterText = `我从来都没有拥有过什么，或者也可以说我失去的太多，我总是想用力地抓住什么，我哥送的一副耳机，小颖儿送的一个手链，我妈织的毛衣，又或者是一张朋友随手拍下的我的照片，这些所有承载着美好的事物，我都希望能永远拥有，一段关系的开始是美好的，我就希望永远都是这么美好，为了抓住这些美好，我会做出很多努力，我希望耳机手链毛衣永远不会坏，照片永远都保存下来，关系永远这么美好，可永远好像很难，我想尽力做到最好，因为我不想我失去的时候后悔，后悔为什么当时没有做好，如果我所珍视的这些注定都会消失，那我希望能它们能够停留的久一点，再多一些美好的瞬间，常用，常戴，常穿，常记录，常见面。`;
 const letterWrap = document.getElementById("letter-wrap");
 const letterContentDom = document.getElementById("letter-content");
-
 //信箱点击，弹出密码输入框
 document.getElementById("mailOpen").onclick = ()=>{
   document.getElementById("password-wrap").style.display = "flex";
@@ -569,7 +544,6 @@ document.getElementById("pwdConfirm").onclick = ()=>{
 document.getElementById("pwdCancel").onclick = ()=>{
   document.getElementById("password-wrap").style.display = "none";
 }
-
 //打开信件逐字打印
 async function openLetter(){
   letterWrap.style.display = "flex";
@@ -591,7 +565,6 @@ document.getElementById("closeLetter").onclick = ()=>{
   letterWrap.style.display = "none";
   letterContentDom.innerText = "";
 }
-
 // =========第一页原有计时、爱心逻辑========
 const startTime = new Date("2026-03-29T10:30:00+08:00").getTime();
 const sentenceList = [
@@ -609,7 +582,6 @@ const heartColors = [
   "#F8C8DC", "#D4A5A5", "#92C9B1", "#A8DADC", "#F7D9C4",
   "#E2C0E8", "#BFD7EA"
 ];
-
 const containerDom = document.getElementById("container");
 function updateTimer(){
   const now = Date.now();
@@ -629,10 +601,8 @@ function updateTimer(){
 }
 updateTimer();
 setInterval(updateTimer, 1000);
-
 const popupBox = document.getElementById('popup-box');
 const popupTextDom = document.getElementById('popup-text');
-
 async function showFadeText(text,color){
   popupTextDom.style.color = color;
   popupTextDom.innerText = text;
@@ -656,7 +626,6 @@ async function closePopup(){
 popupBox.addEventListener('click',async ()=>{
   await closePopup();
 });
-
 //爱心炸开
 function createBurst(x,y,color){
   for(let i=0;i<10;i++){
@@ -674,7 +643,6 @@ function createBurst(x,y,color){
     setTimeout(()=>p.remove(),700);
   }
 }
-
 //生成飘落爱心，只在page1处于active时才生成
 function createHeart(){
   if(!page1.classList.contains("active")) return;
@@ -689,7 +657,6 @@ function createHeart(){
   const fallDur = 5 + Math.random()*7;
   heart.style.animationDuration = fallDur+"s";
   document.body.appendChild(heart);
-
   heart.onclick = async function(e){
     e.stopPropagation();
     const rect = heart.getBoundingClientRect();
@@ -703,8 +670,6 @@ function createHeart(){
   setTimeout(()=>{heart.remove();}, fallDur*1000 + 200);
 }
 setInterval(createHeart, 550);
-
-
 //====================炸弹报数游戏（巴什博弈）====================
 /*
 游戏规则：
@@ -716,13 +681,11 @@ let currentNum = 0;      //当前报到到数字
 let gameOver = false;
 let isPlayerTurn = false;
 let playerWin = false;
-
 const bombInfoDom = document.getElementById("bombInfo");
 const numBarDom = document.getElementById("numBar");
 const gameStatusDom = document.getElementById("gameStatus");
 const selectSideWrap = document.getElementById("selectSideWrap");
 const passwordHintDom = document.getElementById("passwordHint");
-
 //初始化一局游戏
 function initGame(){
   //10~50随机炸弹数字
@@ -732,14 +695,12 @@ function initGame(){
   playerWin = false;
   isPlayerTurn = false;
   passwordHintDom.style.display = "none";
-
   bombInfoDom.innerText = `炸弹数字：${bombNum}🔴`;
   //渲染数字条
   renderNumberBar();
   gameStatusDom.innerText = "请选择先手或者后手开始游戏";
   selectSideWrap.style.display = "flex";
 }
-
 //渲染数字条
 function renderNumberBar(){
   numBarDom.innerHTML = "";
@@ -764,7 +725,6 @@ function renderNumberBar(){
     numBarDom.appendChild(span);
   }
 }
-
 //玩家点击数字，只允许点击currentNum+1 或者 currentNum+2
 async function handleNumberClick(clickNum){
   if(gameOver || !isPlayerTurn) return;
@@ -777,7 +737,6 @@ async function handleNumberClick(clickNum){
   const cnt = clickNum - currentNum;
   await playerCall(cnt);
 }
-
 //玩家选择先手
 document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
@@ -786,7 +745,6 @@ document.getElementById("goFirst").onclick = ()=>{
   gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
   renderNumberBar();
 }
-
 //玩家选择后手，电脑先手
 document.getElementById("goSecond").onclick = async ()=>{
   selectSideWrap.style.display = "none";
@@ -797,12 +755,10 @@ document.getElementById("goSecond").onclick = async ()=>{
   await sleep(1000);
   computerTurn();
 }
-
 //休眠工具
 function sleep(ms){
   return new Promise(resolve=>setTimeout(resolve,ms));
 }
-
 //玩家报数逻辑
 async function playerCall(cnt){
   let newEnd = currentNum + cnt;
@@ -813,12 +769,11 @@ async function playerCall(cnt){
   currentNum = newEnd;
   renderNumberBar();
   gameStatusDom.innerText = `你报到：${newEnd}`;
-
   //判断是否踩到炸弹
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = false;
-    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！`;
+    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！加油哦~`;
     renderNumberBar();
     return;
   }
@@ -826,7 +781,6 @@ async function playerCall(cnt){
   await sleep(1000);
   computerTurn();
 }
-
 //电脑回合，巴什博弈必胜策略
 async function computerTurn(){
   if(gameOver) return;
@@ -842,13 +796,11 @@ async function computerTurn(){
   }
   //防止越界
   if(currentNum + step > bombNum) step = 1;
-
   let newEnd = currentNum + step;
   //电脑报数，不加入玩家标记集合
   currentNum = newEnd;
   renderNumberBar();
   gameStatusDom.innerText = `电脑报到：${newEnd}`;
-
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = true;
@@ -861,15 +813,12 @@ async function computerTurn(){
   gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
   renderNumberBar();
 }
-
 //重新开始按钮
 document.getElementById("gameReset").onclick = ()=>{
   initGame();
 }
-
 //页面加载初始化游戏
 initGame();
-
 </script>
 </body>
 </html>
