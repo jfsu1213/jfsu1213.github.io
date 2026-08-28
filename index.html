@@ -402,10 +402,12 @@ body{
 </style>
 </head>
 <body>
+<!-- 修复：audio标签闭合！按钮放在audio外面 -->
 <audio id="bgmAudio" loop preload="auto">
-  <source src="周杰伦 - 最长的电影.mp3" type="audio/mpeg">
+  <source src="bgm2.mp3" type="audio/mpeg">
 
 <button class="bgm-btn" id="bgmToggle">🔊</button>
+
 <!--第一页：原有计时页面-->
 <div id="page1" class="page active">
   <div id="container">
@@ -414,6 +416,7 @@ body{
   </div>
   <button class="page-btn" id="toPage2">下一页 →</button>
 </div>
+
 <!--第二页：自定义背景图片页面-->
 <div id="page2" class="page">
   <div class="game-box">
@@ -438,6 +441,7 @@ body{
   <button class="mail-btn" id="mailOpen">📩</button>
   <button class="page-btn" id="toPage1">← 返回</button>
 </div>
+
 <!--游戏规则弹窗-->
 <div id="rule-wrap">
   <div class="rule-card">
@@ -452,6 +456,7 @@ body{
     <button class="close-rule" id="closeRuleBtn">了解了</button>
   </div>
 </div>
+
 <!--密码弹窗-->
 <div id="password-wrap">
   <div class="pwd-card">
@@ -463,10 +468,12 @@ body{
     </div>
   </div>
 </div>
+
 <!--第一页爱心弹窗-->
 <div id="popup-box">
   <div id="popup-text"></div>
 </div>
+
 <!--信件弹窗 来自2026‑08‑27的来信-->
 <div id="letter-wrap">
   <div id="letter-card">
@@ -475,6 +482,7 @@ body{
     <button class="close-letter" id="closeLetter">关闭信件</button>
   </div>
 </div>
+
 <script>
 // =========页面切换逻辑，带渐入渐出，切换第二页清除全部爱心dom========
 const page1 = document.getElementById("page1");
@@ -494,7 +502,7 @@ bgmToggleBtn.onclick = function(){
       bgmToggleBtn.innerText = "🔊";
       bgmPlaying = true;
     }).catch(err=>{
-      console.log("播放失败",err);
+      console.log("播放失败，音频文件不存在或者浏览器限制自动播放",err);
     })
   }
 }
@@ -671,13 +679,8 @@ function createHeart(){
 }
 setInterval(createHeart, 550);
 //====================炸弹报数游戏（巴什博弈）====================
-/*
-游戏规则：
-两名玩家轮流报数，从数字1开始，每人每次可以报1个或2个连续的数字，谁被迫报到炸弹数字谁就输。
-关键数base = 1+2 = 3；目标抢到 bombNum‑1
-*/
-let bombNum = 0;         //炸弹数字
-let currentNum = 0;      //当前报到到数字
+let bombNum = 0;
+let currentNum = 0;
 let gameOver = false;
 let isPlayerTurn = false;
 let playerWin = false;
@@ -686,9 +689,8 @@ const numBarDom = document.getElementById("numBar");
 const gameStatusDom = document.getElementById("gameStatus");
 const selectSideWrap = document.getElementById("selectSideWrap");
 const passwordHintDom = document.getElementById("passwordHint");
-//初始化一局游戏
+
 function initGame(){
-  //10~50随机炸弹数字
   bombNum = Math.floor(Math.random()*41)+10;
   currentNum = 0;
   gameOver = false;
@@ -696,12 +698,11 @@ function initGame(){
   isPlayerTurn = false;
   passwordHintDom.style.display = "none";
   bombInfoDom.innerText = `炸弹数字：${bombNum}🔴`;
-  //渲染数字条
   renderNumberBar();
   gameStatusDom.innerText = "请选择先手或者后手开始游戏";
   selectSideWrap.style.display = "flex";
 }
-//渲染数字条
+
 function renderNumberBar(){
   numBarDom.innerHTML = "";
   for(let i=1;i<=bombNum;i++){
@@ -715,7 +716,6 @@ function renderNumberBar(){
         span.classList.add("computer");
       }
     }
-    //未到回合/已经报过/游戏结束，禁止点击
     if(!isPlayerTurn || i <= currentNum || gameOver){
       span.classList.add("disabled");
     }else{
@@ -725,7 +725,7 @@ function renderNumberBar(){
     numBarDom.appendChild(span);
   }
 }
-//玩家点击数字，只允许点击currentNum+1 或者 currentNum+2
+
 async function handleNumberClick(clickNum){
   if(gameOver || !isPlayerTurn) return;
   const allow1 = currentNum + 1;
@@ -737,7 +737,7 @@ async function handleNumberClick(clickNum){
   const cnt = clickNum - currentNum;
   await playerCall(cnt);
 }
-//玩家选择先手
+
 document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
   isPlayerTurn = true;
@@ -745,7 +745,7 @@ document.getElementById("goFirst").onclick = ()=>{
   gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
   renderNumberBar();
 }
-//玩家选择后手，电脑先手
+
 document.getElementById("goSecond").onclick = async ()=>{
   selectSideWrap.style.display = "none";
   window._markPlayerSet = new Set();
@@ -755,21 +755,19 @@ document.getElementById("goSecond").onclick = async ()=>{
   await sleep(1000);
   computerTurn();
 }
-//休眠工具
+
 function sleep(ms){
   return new Promise(resolve=>setTimeout(resolve,ms));
 }
-//玩家报数逻辑
+
 async function playerCall(cnt){
   let newEnd = currentNum + cnt;
-  //标记玩家报的数字
   for(let i=currentNum+1;i<=newEnd;i++){
     window._markPlayerSet.add(i);
   }
   currentNum = newEnd;
   renderNumberBar();
   gameStatusDom.innerText = `你报到：${newEnd}`;
-  //判断是否踩到炸弹
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = false;
@@ -781,7 +779,7 @@ async function playerCall(cnt){
   await sleep(1000);
   computerTurn();
 }
-//电脑回合，巴什博弈必胜策略
+
 async function computerTurn(){
   if(gameOver) return;
   const target = bombNum - 1;
@@ -791,13 +789,10 @@ async function computerTurn(){
   if(rem > 0){
     step = rem;
   }else{
-    //无法必胜，随机1~2
     step = Math.random()>0.5?1:2;
   }
-  //防止越界
   if(currentNum + step > bombNum) step = 1;
   let newEnd = currentNum + step;
-  //电脑报数，不加入玩家标记集合
   currentNum = newEnd;
   renderNumberBar();
   gameStatusDom.innerText = `电脑报到：${newEnd}`;
@@ -813,11 +808,10 @@ async function computerTurn(){
   gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
   renderNumberBar();
 }
-//重新开始按钮
+
 document.getElementById("gameReset").onclick = ()=>{
   initGame();
 }
-//页面加载初始化游戏
 initGame();
 </script>
 </body>
