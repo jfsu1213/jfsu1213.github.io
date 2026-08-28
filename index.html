@@ -69,6 +69,23 @@ body{
   backdrop-filter:blur(4px);
 }
 
+/* =========背景音乐按钮 移到左上角 =========*/
+.bgm-btn{
+  position:fixed;
+  left:20px;
+  top:20px;
+  z-index:25;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(4px);
+  font-size:22px;
+  cursor:pointer;
+  display:none;
+}
+
 /* 飘落爱心 */
 .heart{
   position:fixed;
@@ -396,6 +413,11 @@ body{
 </head>
 <body>
 
+<audio id="bgmAudio" loop preload="auto">
+  <source src="周杰伦 - 最长的电影.mp3" type="audio/mpeg">
+
+<button class="bgm-btn" id="bgmToggle">🔊</button>
+
 <!--第一页：原有计时页面-->
 <div id="page1" class="page active">
   <div id="container">
@@ -478,15 +500,41 @@ const page1 = document.getElementById("page1");
 const page2 = document.getElementById("page2");
 const allHeartList = ()=>document.querySelectorAll(".heart");
 
+// =====背景音乐逻辑=====
+const bgmAudio = document.getElementById('bgmAudio');
+const bgmToggleBtn = document.getElementById('bgmToggle');
+let bgmPlaying = false;
+
+bgmToggleBtn.onclick = function(){
+  if(bgmPlaying){
+    bgmAudio.pause();
+    bgmToggleBtn.innerText = "🔇";
+    bgmPlaying = false;
+  }else{
+    bgmAudio.play().then(()=>{
+      bgmToggleBtn.innerText = "🔊";
+      bgmPlaying = true;
+    }).catch(err=>{
+      console.log("播放失败",err);
+    })
+  }
+}
+
 document.getElementById("toPage2").onclick = ()=>{
   //切换到第二页，清除所有飘落爱心
   allHeartList().forEach(h=>h.remove());
   page1.classList.remove("active");
   page2.classList.add("active");
+  bgmToggleBtn.style.display = "block";
 }
 document.getElementById("toPage1").onclick = ()=>{
   page2.classList.remove("active");
   page1.classList.add("active");
+  //回到第一页暂停音乐，隐藏音乐按钮
+  bgmAudio.pause();
+  bgmPlaying = false;
+  bgmToggleBtn.innerText = "🔊";
+  bgmToggleBtn.style.display = "none";
 }
 
 //====游戏规则弹窗====
@@ -498,7 +546,7 @@ document.getElementById("closeRuleBtn").onclick = ()=>{
   ruleWrap.style.display = "none";
 }
 
-//=====信件内容=====
+//=====信件内容【已更新为新文本】=====
 const letterText = `我从来都没有拥有过什么，或者也可以说我失去的太多，我总是想用力地抓住什么，我哥送的一副耳机，小颖儿送的一个手链，我妈织的毛衣，又或者是一张朋友随手拍下的我的照片，这些所有承载着美好的事物，我都希望能永远拥有，一段关系的开始是美好的，我就希望永远都是这么美好，为了抓住这些美好，我会做出很多努力，我希望耳机手链毛衣永远不会坏，照片永远都保存下来，关系永远这么美好，可永远好像很难，我想尽力做到最好，因为我不想我失去的时候后悔，后悔为什么当时没有做好，如果我所珍视的这些注定都会消失，那我希望能它们能够停留的久一点，再多一些美好的瞬间，常用，常戴，常穿，常记录，常见面。`;
 const letterWrap = document.getElementById("letter-wrap");
 const letterContentDom = document.getElementById("letter-content");
@@ -735,7 +783,7 @@ document.getElementById("goFirst").onclick = ()=>{
   selectSideWrap.style.display = "none";
   isPlayerTurn = true;
   window._markPlayerSet = new Set();
-  gameStatusDom.innerText = "轮到你操作，请点击后一个或者后两个数字";
+  gameStatusDom.innerText = "轮到你操作，请点击下一个或者下下一个数字";
   renderNumberBar();
 }
 
@@ -770,7 +818,7 @@ async function playerCall(cnt){
   if(currentNum >= bombNum){
     gameOver = true;
     playerWin = false;
-    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，defeat！加油哦`;
+    gameStatusDom.innerText = `游戏结束！你报到炸弹数字${bombNum}，你输了！加油哦~`;
     renderNumberBar();
     return;
   }
