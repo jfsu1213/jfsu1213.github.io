@@ -404,9 +404,8 @@ body{
 <body>
 <audio id="bgmAudio" loop preload="auto">
   <source src="bgm2.mp3" type="audio/mpeg">
- <!-- source之后立刻闭合audio！！！ -->
+  <!-- ✅这里！source下面立刻关闭audio！！ -->
 
-<!-- button放到audio外面！！ -->
 <button class="bgm-btn" id="bgmToggle">🔊</button>
 
 <!--第一页：原有计时页面-->
